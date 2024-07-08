@@ -1,7 +1,10 @@
 #include "router.hpp"
+#include <algorithm> // std::equal
+#include <cctype>    // std::tolower
 #include <csignal>
-#include <iostream>
 #include <netinet/in.h>
+#include <string_view> // std::string_view
+#include <strings.h>
 #include <sys/socket.h>
 #include <vector>
 
@@ -41,11 +44,20 @@ void Router::Handle(std::string pathPattern,
 // Probably dont use map but a tree for it, then traverse tree for routing
 Response Router::Route(Request req) {
   for (const auto &[key, value] : m_routes) {
-    int pos = 0;
-    std::string path = req.path.Base();
     std::string pattern = key;
-    std::string patternCopy = key;
+
+    int mPos = pattern.find(' ');
+    std::string method = pattern.substr(0, mPos);
+
+    if (mPos != -1 && method != req.Method()) {
+      continue;
+    }
+
+    pattern.erase(0, mPos + 1);
+    std::string patternCopy = pattern;
+    std::string path = req.path.Base();
     bool found = false;
+    int pos = 0;
     while (pos != -1) {
       found = true;
       pos = pattern.find('/');
@@ -54,7 +66,7 @@ Response Router::Route(Request req) {
       int uPos = path.find('/');
       std::string u = path.substr(0, uPos);
 
-      if (!p.starts_with('{') && p != u) {
+      if (!p.starts_with('{') && strcasecmp(p.data(), u.data()) != 0) {
         found = false;
         break;
       }

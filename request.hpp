@@ -23,6 +23,7 @@ public:
   explicit Request(std::vector<std::byte> buf);
   void Print();
   bool HasData();
+  std::string Method();
   std::vector<std::byte> Data();
 };
 #endif // !REQUEST_HEADER_H

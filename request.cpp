@@ -89,5 +89,6 @@ void Request::Print() {
   }
 }
 
+std::string Request::Method() { return m_method; }
 bool Request::HasData() { return m_payload.size() != 0; }
 std::vector<std::byte> Request::Data() { return m_payload; }
