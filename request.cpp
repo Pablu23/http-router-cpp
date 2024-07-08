@@ -8,7 +8,7 @@ bool Request::protocol(std::stringstream *ss, int *procPart, char c) {
       m_method = ss->str();
       break;
     case 1:
-      m_path = ss->str();
+      m_pathRaw = ss->str();
       break;
     case 2:
       m_protocol = ss->str();
@@ -24,7 +24,8 @@ bool Request::protocol(std::stringstream *ss, int *procPart, char c) {
   return true;
 }
 
-Request::Request(std::vector<std::byte> buf) {
+// This is shit
+Request::Request(std::vector<std::byte> buf) : path("") {
   std::string name;
   std::stringstream ss;
   bool header = true;
@@ -69,11 +70,12 @@ Request::Request(std::vector<std::byte> buf) {
       ss << c;
     }
   }
+  path = Path{m_pathRaw};
 }
 
 void Request::Print() {
   std::cout << "Protocol: " << m_protocol << "\n"
-            << "Req: " << m_method << " " << m_path << std::endl;
+            << "Req: " << m_method << " " << m_pathRaw << std::endl;
   for (const auto &[key, value] : m_headers) {
     std::cout << "[" << key << "]: [" << value << "]\n";
   }
