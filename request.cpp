@@ -24,7 +24,7 @@ bool Request::protocol(std::stringstream *ss, int *procPart, char c) {
   return true;
 }
 
-// This is shit
+// This is shit, meaning the path constructor
 Request::Request(std::vector<std::byte> buf) : path("") {
   std::string name;
   std::stringstream ss;

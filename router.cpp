@@ -1,12 +1,6 @@
 #include "router.hpp"
-#include <algorithm> // std::equal
-#include <cctype>    // std::tolower
 #include <csignal>
-#include <netinet/in.h>
-#include <string_view> // std::string_view
 #include <strings.h>
-#include <sys/socket.h>
-#include <vector>
 
 Router::Router(int port) {
   m_socket = socket(AF_INET, SOCK_STREAM, 0);

@@ -4,8 +4,6 @@
 #include <iostream>
 #include <netinet/in.h>
 #include <sstream>
-#include <string>
-#include <vector>
 
 Response::Response(http::statusCode statusCode) { m_statusCode = statusCode; }
 
