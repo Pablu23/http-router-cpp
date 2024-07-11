@@ -1,5 +1,6 @@
 #include "router.hpp"
 #include <csignal>
+#include <mutex>
 #include <strings.h>
 
 Router::Router(int port) {
@@ -14,13 +15,61 @@ int Router::Start() {
   if (err != 0)
     return err;
 
+  StartThreadLoop();
+
   err = listen(m_socket, 5);
   if (err != 0)
     return err;
 
-  std::vector<std::byte> buffer(1024);
   while (true) {
     int client = accept(m_socket, nullptr, nullptr);
+    QueueClient(client);
+  }
+
+  StopThreadLoop();
+}
+
+void Router::QueueClient(int fd) {
+  {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_clients.push(fd);
+  }
+  m_cond.notify_one();
+}
+
+void Router::StartThreadLoop() {
+  const uint32_t numThreads = std::thread::hardware_concurrency();
+  for (auto i = 0; i < numThreads; ++i) {
+    m_threads.emplace_back(std::thread(&Router::ThreadLoop, this));
+  }
+}
+
+void Router::StopThreadLoop() {
+  {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_shouldTerminate = true;
+  }
+  m_cond.notify_all();
+  for (std::thread &active_thread : m_threads) {
+    active_thread.join();
+  }
+  m_threads.clear();
+}
+
+void Router::ThreadLoop() {
+  std::vector<std::byte> buffer(1024);
+  while (true) {
+    int client;
+    {
+      std::unique_lock<std::mutex> lock(m_mutex);
+      m_cond.wait(lock,
+                  [this] { return !m_clients.empty() || m_shouldTerminate; });
+      if (m_shouldTerminate)
+        return;
+      client = m_clients.front();
+      m_clients.pop();
+    }
+
     int read = recv(client, buffer.data(), buffer.size(), 0);
     Request req(buffer);
     Response res = Route(req);
