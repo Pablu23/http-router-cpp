@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 
+namespace http {
 class Path {
 private:
   // std::string m_path;
@@ -19,5 +20,6 @@ public:
   std::string Base();
   void Match(std::string pattern);
 };
+} // namespace http
 
 #endif // !PATH_H

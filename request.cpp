@@ -1,6 +1,8 @@
 #include "request.hpp"
 #include <iostream>
 
+using namespace http;
+
 bool Request::protocol(std::stringstream *ss, int *procPart, char c) {
   if (c == ' ' || c == '\n') {
     switch (*procPart) {

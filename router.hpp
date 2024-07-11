@@ -11,6 +11,7 @@
 #include <queue>
 #include <string>
 
+namespace http {
 class Router {
 private:
   std::map<std::string, std::function<Response(Request, Response)>> m_routes;
@@ -36,5 +37,6 @@ public:
   int Start();
   int Stop();
 };
+} // namespace http
 
 #endif // !ROUTER_H

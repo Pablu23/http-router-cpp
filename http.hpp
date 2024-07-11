@@ -2,8 +2,8 @@
 #define STATUSCODE_H
 
 #include <string>
-
-class http {
+namespace http {
+class statuscode {
 public:
   enum statusCode {
     CONTINUE = 100,
@@ -157,5 +157,6 @@ public:
     }
   }
 };
+} // namespace http
 
 #endif // !STATUSCODE_H

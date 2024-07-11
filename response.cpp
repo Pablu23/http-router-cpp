@@ -1,11 +1,16 @@
 #include "response.hpp"
+#include "http.hpp"
 #include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <netinet/in.h>
 #include <sstream>
 
-Response::Response(http::statusCode statusCode) { m_statusCode = statusCode; }
+using namespace http;
+
+Response::Response(statuscode::statusCode statusCode) {
+  m_statusCode = statusCode;
+}
 
 void Response::SetPayload(std::vector<std::byte> data) {
   m_headers.insert(std::pair<std::string, std::string>(
@@ -29,7 +34,7 @@ void Response::SetContentType(const std::string type) {
 void Response::Send(int clientSocket) {
   std::stringstream ss;
   ss << "HTTP/1.1 " << m_statusCode << " "
-     << http::StatusCodeString(m_statusCode) << "\n";
+     << statuscode::StatusCodeString(m_statusCode) << "\n";
   for (const auto &[key, value] : m_headers) {
     ss << key << ": " << value << "\n";
   }

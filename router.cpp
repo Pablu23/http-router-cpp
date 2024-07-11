@@ -1,7 +1,10 @@
 #include "router.hpp"
+#include "http.hpp"
 #include <csignal>
 #include <mutex>
 #include <strings.h>
+
+using namespace http;
 
 Router::Router(int port) {
   m_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -118,11 +121,11 @@ Response Router::Route(Request req) {
       path.erase(0, uPos + 1);
     }
     if (found) {
-      Response res(http::OK);
+      Response res(statuscode::OK);
       req.path.Match(patternCopy);
       return value(req, res);
     }
   }
 
-  return Response(http::NOT_FOUND);
+  return Response(statuscode::NOT_FOUND);
 }

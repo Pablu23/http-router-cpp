@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+namespace http {
 class Request {
 private:
   std::map<std::string, std::string> m_headers;
@@ -26,4 +27,6 @@ public:
   std::string Method();
   std::vector<std::byte> Data();
 };
+} // namespace http
+
 #endif // !REQUEST_HEADER_H

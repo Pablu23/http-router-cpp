@@ -6,14 +6,15 @@
 #include <string>
 #include <vector>
 
+namespace http {
 class Response {
 private:
   std::map<std::string, std::string> m_headers;
   std::vector<std::byte> m_payload;
-  http::statusCode m_statusCode;
+  statuscode::statusCode m_statusCode;
 
 public:
-  Response(http::statusCode statusCode);
+  Response(statuscode::statusCode statusCode);
   // Response(std::vector<std::byte> data);
   // Response(std::string data);
   void SetPayload(std::vector<std::byte> data);
@@ -22,5 +23,6 @@ public:
   void Send(int clientSocket);
   void Print();
 };
+} // namespace http
 
 #endif // !RESPONSE_H

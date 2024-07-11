@@ -1,6 +1,8 @@
 #include "path.hpp"
 #include <optional>
 
+using namespace http;
+
 Path::Path(std::string path) {
   int pos = path.find("?");
   m_base = path.substr(0, pos);
