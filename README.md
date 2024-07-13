@@ -1,7 +1,8 @@
 # Http Router which is supposed to be similar to the standard Golang Router
 ## Dependencies
-c++20
-make for building
+- c++20
+- make for building
+- gcc (g++) if using make for build
 
 ## How to build
 Run Example server implemented in main.cpp
