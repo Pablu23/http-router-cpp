@@ -20,6 +20,7 @@ public:
   void SetPayload(std::vector<std::byte> data);
   void SetPayload(std::string data);
   void SetContentType(const std::string type);
+  void SetStatusCode(const statuscode::statusCode statuscode);
   void Send(int clientSocket);
   void Print();
 };

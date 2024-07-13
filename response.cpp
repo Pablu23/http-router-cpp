@@ -18,6 +18,10 @@ void Response::SetPayload(std::vector<std::byte> data) {
   m_payload = data;
 }
 
+void Response::SetStatusCode(statuscode::statusCode statuscode) {
+  m_statusCode = statuscode;
+}
+
 void Response::SetPayload(std::string data) {
   m_headers.insert(std::pair<std::string, std::string>(
       "content-length", std::to_string(std::strlen(data.data()))));
