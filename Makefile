@@ -12,7 +12,7 @@ $(NAME): ofiles
 	ar rcs $(NAME) $(OFILES)
 
 ofiles:
-	g++ -std=c++20 -O -c $(CFILES)
+	g++ $(CFLAGS) -std=c++20 -O -c $(CFILES)
 
 clean:
 	rm -f $(OFILES)

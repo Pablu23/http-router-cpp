@@ -1,6 +1,7 @@
 #include "router.hpp"
 #include "http.hpp"
 #include <csignal>
+#include <cstdint>
 #include <mutex>
 #include <strings.h>
 
@@ -42,7 +43,7 @@ void Router::QueueClient(int fd) {
 
 void Router::StartThreadLoop() {
   const uint32_t numThreads = std::thread::hardware_concurrency();
-  for (auto i = 0; i < numThreads; ++i) {
+  for (uint32_t i = 0; i < numThreads; ++i) {
     m_threads.emplace_back(std::thread(&Router::ThreadLoop, this));
   }
 }
@@ -73,7 +74,7 @@ void Router::ThreadLoop() {
       m_clients.pop();
     }
 
-    int read = recv(client, buffer.data(), buffer.size(), 0);
+    recv(client, buffer.data(), buffer.size(), 0);
     Request req(buffer);
     Response res = Route(req);
     res.Send(client);

@@ -42,7 +42,7 @@ void Response::Send(int clientSocket) {
   for (const auto &[key, value] : m_headers) {
     ss << key << ": " << value << "\n";
   }
-  if (m_payload.size() >= 0) {
+  if (m_payload.size() > 0) {
     ss << "\n";
     for (auto &byte : m_payload) {
       char c = static_cast<char>(byte);
