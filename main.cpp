@@ -1,37 +1,42 @@
+#include "http.hpp"
 #include "router.hpp"
 
 using namespace http;
 
-int main() {
+void HelloWorld(Request req, Response *res) {
+  res->SetPayload("Hello World!");
+  res->SetContentType("text/plain");
+}
 
-  http::Router router(8080);
+int main() {
+  Router router(8181);
+
   // Allow all Methods
-  router.Handle("/helloWorld", [](Request req, Response res) -> Response {
-    res.SetPayload("Hello World!");
-    res.SetContentType("text/plain");
-    return res;
+  router.Handle("/helloWorld", HelloWorld);
+
+  router.Handle("/healthz", [](Request req, Response *res) {
+    res->SetStatusCode(statuscode::OK);
+    res->SetPayload(std::vector<std::byte>());
+    res->SetContentType("text/plain");
   });
 
   // Only allow GET
-  router.Handle("GET /echo/{name}", [](Request req, Response res) -> Response {
+  router.Handle("GET /echo/{name}", [](Request req, Response *res) {
     std::string name = req.path.Get("name").value_or("No Name given");
-    res.SetPayload("Hello " + name);
-    res.SetContentType("text/plain");
-    return res;
+    res->SetPayload("Hello " + name);
+    res->SetContentType("text/plain");
   });
 
   // Only allow POST
-  router.Handle("POST /echo/{name}", [](Request req, Response res) -> Response {
+  router.Handle("POST /echo/{name}", [](Request req, Response *res) {
     std::string name = req.path.Get("name").value_or("No Name given");
-    res.SetPayload("Hello with Post" + name);
-    res.SetContentType("text/plain");
-    return res;
+    res->SetPayload("Hello with Post" + name);
+    res->SetContentType("text/plain");
   });
 
-  router.Handle("/", [](Request req, Response res) -> Response {
-    res.SetPayload("Main");
-    res.SetContentType("text/plain");
-    return res;
+  router.Handle("/", [](Request req, Response *res) {
+    res->SetPayload("Main");
+    res->SetContentType("text/plain");
   });
 
   router.Start();

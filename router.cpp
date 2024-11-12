@@ -2,8 +2,12 @@
 #include "http.hpp"
 #include <csignal>
 #include <cstdint>
+#include <iostream>
 #include <mutex>
 #include <strings.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 using namespace http;
 
@@ -78,17 +82,23 @@ void Router::ThreadLoop() {
     Request req(buffer);
     Response res = Route(req);
     res.Send(client);
+
+    shutdown(client, SHUT_WR);
+    while (recv(client, buffer.data(), buffer.size(), 0) > 0) {
+      std::cout << buffer.data() << std::endl;
+    }
     close(client);
   }
 }
 
 void Router::Handle(std::string pathPattern,
-                    std::function<Response(Request, Response)> func) {
+                    std::function<void(Request, Response *)> func) {
   m_routes.insert_or_assign(pathPattern, func);
 }
 
 // This should be better
 // Probably dont use map but a tree for it, then traverse tree for routing
+// Also this isnt accurate
 Response Router::Route(Request req) {
   for (const auto &[key, value] : m_routes) {
     std::string pattern = key;
@@ -121,10 +131,12 @@ Response Router::Route(Request req) {
       pattern.erase(0, pos + 1);
       path.erase(0, uPos + 1);
     }
+
     if (found) {
       Response res(statuscode::OK);
       req.path.Match(patternCopy);
-      return value(req, res);
+      value(req, &res);
+      return res;
     }
   }
 

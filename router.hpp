@@ -14,7 +14,7 @@
 namespace http {
 class Router {
 private:
-  std::map<std::string, std::function<Response(Request, Response)>> m_routes;
+  std::map<std::string, std::function<void(Request, Response *)>> m_routes;
   int m_socket;
   sockaddr_in m_address;
   Response Route(Request req);
@@ -33,7 +33,7 @@ private:
 public:
   Router(int port);
   void Handle(std::string pathPattern,
-              std::function<Response(Request, Response)> func);
+              std::function<void(Request, Response *)> func);
   int Start();
   int Stop();
 };

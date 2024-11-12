@@ -17,8 +17,9 @@ public:
   Response(statuscode::statusCode statusCode);
   // Response(std::vector<std::byte> data);
   // Response(std::string data);
-  void SetPayload(std::vector<std::byte> data);
-  void SetPayload(std::string data);
+  void SetHeader(const std::string name, const std::string value);
+  void SetPayload(const std::vector<std::byte> data);
+  void SetPayload(const std::string data);
   void SetContentType(const std::string type);
   void SetStatusCode(const statuscode::statusCode statuscode);
   void Send(int clientSocket);

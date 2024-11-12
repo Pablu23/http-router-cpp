@@ -10,11 +10,16 @@ using namespace http;
 
 Response::Response(statuscode::statusCode statusCode) {
   m_statusCode = statusCode;
+  SetHeader("Connection", "close");
 }
 
-void Response::SetPayload(std::vector<std::byte> data) {
+void Response::SetHeader(const std::string name, const std::string value) {
+  m_headers.insert_or_assign(name, value);
+}
+
+void Response::SetPayload(const std::vector<std::byte> data) {
   m_headers.insert(std::pair<std::string, std::string>(
-      "content-length", std::to_string(data.size())));
+      "Content-Length", std::to_string(data.size())));
   m_payload = data;
 }
 
@@ -22,9 +27,9 @@ void Response::SetStatusCode(statuscode::statusCode statuscode) {
   m_statusCode = statuscode;
 }
 
-void Response::SetPayload(std::string data) {
+void Response::SetPayload(const std::string data) {
   m_headers.insert(std::pair<std::string, std::string>(
-      "content-length", std::to_string(std::strlen(data.data()))));
+      "Content-Length", std::to_string(std::strlen(data.data()))));
 
   m_payload = std::vector<std::byte>(data.size() + 1);
   std::transform(data.begin(), data.end(), m_payload.begin(),
@@ -32,7 +37,7 @@ void Response::SetPayload(std::string data) {
 }
 
 void Response::SetContentType(const std::string type) {
-  m_headers.insert_or_assign("content-type", type);
+  m_headers.insert_or_assign("Content-Type", type);
 }
 
 void Response::Send(int clientSocket) {
