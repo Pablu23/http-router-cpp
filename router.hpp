@@ -25,18 +25,18 @@ private:
   std::condition_variable m_cond;
   std::vector<std::thread> m_threads;
   std::queue<int> m_clients;
-  bool m_shouldTerminate = false;
-  void StartThreadLoop();
-  void ThreadLoop();
-  void QueueClient(int client);
-  void StopThreadLoop();
+  bool m_should_terminate = false;
+  void start_thread_loop();
+  void thread_loop();
+  void queue_client(int client);
+  void stop_thread_loop();
 
 public:
   Router(int port);
-  void Handle(std::string pathPattern,
+  void handle(std::string path_pattern,
               std::function<void(Request, Response *)> func);
-  int Start();
-  int Stop();
+  int start();
+  int stop();
 };
 } // namespace http
 

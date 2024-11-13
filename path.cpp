@@ -10,16 +10,16 @@ Path::Path(std::string path) {
   m_query = path;
 }
 
-std::optional<std::string> Path::Get(std::string name) {
+std::optional<std::string> Path::get(std::string name) {
   if (m_variables.contains(name))
     return m_variables.at(name);
   return std::nullopt;
 }
 
-std::string Path::Base() { return m_base; }
-std::string Path::Query() { return m_query; }
+std::string Path::base() { return m_base; }
+std::string Path::query() { return m_query; }
 
-void Path::Match(std::string pattern) {
+void Path::match(std::string pattern) {
   int pos = 0;
   std::string path = m_base;
   while (pos != -1) {

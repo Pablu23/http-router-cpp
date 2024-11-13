@@ -11,9 +11,9 @@ namespace http {
 
 class Node {
 public:
-  bool m_isValue;
-  bool m_isDummy;
-  std::string m_subPath;
+  bool m_is_value;
+  bool m_is_dummy;
+  std::string m_sub_path;
   std::map<std::string, std::shared_ptr<Node>> m_next;
   std::function<void(Request, Response *)> m_function;
 
@@ -31,9 +31,9 @@ private:
 
 public:
   Tree(std::string method);
-  void AddPath(std::string, std::function<void(Request, Response *)>);
-  std::optional<std::function<void(Request, Response *)>> Get(std::string);
-  void DebugPrint();
+  void add_path(std::string, std::function<void(Request, Response *)>);
+  std::optional<std::function<void(Request, Response *)>> get(std::string);
+  void debug_Print();
 };
 } // namespace http
 

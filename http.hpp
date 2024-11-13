@@ -3,7 +3,7 @@
 
 #include <string>
 namespace http {
-class statuscode {
+class StatusCode {
 public:
   enum statusCode {
     CONTINUE = 100,
@@ -56,7 +56,7 @@ public:
     HTTP_VERSION_NOT_SUPPORTED = 505
   };
 
-  constexpr static std::string StatusCodeString(const statusCode code) {
+  constexpr static std::string status_code_string(const statusCode code) {
     switch (code) {
     case CONTINUE:
       return "Continue";

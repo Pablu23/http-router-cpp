@@ -15,10 +15,10 @@ private:
 
 public:
   Path(std::string path);
-  std::optional<std::string> Get(std::string name);
-  std::string Query();
-  std::string Base();
-  void Match(std::string pattern);
+  std::optional<std::string> get(std::string name);
+  std::string query();
+  std::string base();
+  void match(std::string pattern);
 };
 } // namespace http
 

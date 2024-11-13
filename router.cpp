@@ -20,12 +20,12 @@ Router::Router(int port) {
   m_address.sin_addr.s_addr = INADDR_ANY;
 }
 
-int Router::Start() {
+int Router::start() {
   int err = bind(m_socket, (struct sockaddr *)&m_address, sizeof(m_address));
   if (err != 0)
     return err;
 
-  StartThreadLoop();
+  start_thread_loop();
 
   err = listen(m_socket, 5);
   if (err != 0)
@@ -33,13 +33,13 @@ int Router::Start() {
 
   while (true) {
     int client = accept(m_socket, nullptr, nullptr);
-    QueueClient(client);
+    queue_client(client);
   }
 
-  StopThreadLoop();
+  stop_thread_loop();
 }
 
-void Router::QueueClient(int fd) {
+void Router::queue_client(int fd) {
   {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_clients.push(fd);
@@ -47,17 +47,17 @@ void Router::QueueClient(int fd) {
   m_cond.notify_one();
 }
 
-void Router::StartThreadLoop() {
+void Router::start_thread_loop() {
   const uint32_t numThreads = std::thread::hardware_concurrency();
   for (uint32_t i = 0; i < numThreads; ++i) {
-    m_threads.emplace_back(std::thread(&Router::ThreadLoop, this));
+    m_threads.emplace_back(std::thread(&Router::thread_loop, this));
   }
 }
 
-void Router::StopThreadLoop() {
+void Router::stop_thread_loop() {
   {
     std::unique_lock<std::mutex> lock(m_mutex);
-    m_shouldTerminate = true;
+    m_should_terminate = true;
   }
   m_cond.notify_all();
   for (std::thread &active_thread : m_threads) {
@@ -66,15 +66,15 @@ void Router::StopThreadLoop() {
   m_threads.clear();
 }
 
-void Router::ThreadLoop() {
+void Router::thread_loop() {
   std::vector<std::byte> buffer(1024);
   while (true) {
     int client;
     {
       std::unique_lock<std::mutex> lock(m_mutex);
       m_cond.wait(lock,
-                  [this] { return !m_clients.empty() || m_shouldTerminate; });
-      if (m_shouldTerminate)
+                  [this] { return !m_clients.empty() || m_should_terminate; });
+      if (m_should_terminate)
         return;
       client = m_clients.front();
       m_clients.pop();
@@ -83,7 +83,7 @@ void Router::ThreadLoop() {
     recv(client, buffer.data(), buffer.size(), 0);
     Request req(buffer);
     Response res = Route(req);
-    res.Send(client);
+    res.send(client);
 
     shutdown(client, SHUT_WR);
     while (recv(client, buffer.data(), buffer.size(), 0) > 0) {
@@ -93,7 +93,7 @@ void Router::ThreadLoop() {
   }
 }
 
-void Router::Handle(std::string pathPattern,
+void Router::handle(std::string pathPattern,
                     std::function<void(Request, Response *)> func) {
   auto route = split(pathPattern, " ");
   // TODO: UNSAFE CHECK BOUNDS
@@ -102,18 +102,18 @@ void Router::Handle(std::string pathPattern,
     tree = std::make_shared<Tree>(Tree(route[0]));
     m_routes.insert_or_assign(route[0], tree);
   }
-  tree->AddPath(route[1], func);
+  tree->add_path(route[1], func);
 }
 
 Response Router::Route(Request req) {
-  auto tree = m_routes[req.Method()];
-  auto route = tree->Get(req.path.Base());
+  auto tree = m_routes[req.method()];
+  auto route = tree->get(req.path.base());
 
   if (!route.has_value()) {
-    return Response(statuscode::NOT_FOUND);
+    return Response(StatusCode::NOT_FOUND);
   }
 
-  Response res(statuscode::OK);
+  Response res(StatusCode::OK);
   route.value()(req, &res);
   return res;
 }

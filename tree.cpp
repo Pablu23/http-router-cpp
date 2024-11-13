@@ -9,18 +9,18 @@
 using namespace http;
 
 Node::Node(std::string sub) {
-  m_subPath = sub;
-  m_isDummy = true;
-  m_isValue = false;
+  m_sub_path = sub;
+  m_is_dummy = true;
+  m_is_value = false;
   m_function = nullptr;
 }
 
 Node::Node(std::string sub, bool isValue,
            std::function<void(Request, Response *)> func) {
-  m_subPath = sub;
-  m_isValue = isValue;
+  m_sub_path = sub;
+  m_is_value = isValue;
   m_function = func;
-  m_isDummy = false;
+  m_is_dummy = false;
 }
 
 Tree::Tree(std::string method) { m_method = method; }
@@ -31,7 +31,7 @@ void addNode(std::shared_ptr<Node> const &parent, std::string path,
   std::shared_ptr<Node> curr = parent->m_next[path];
   if (rest.size() == 0) {
     if (curr) {
-      curr->m_isDummy = false;
+      curr->m_is_dummy = false;
       curr->m_function = func;
     } else {
       std::shared_ptr<Node> leaf =
@@ -55,7 +55,7 @@ void addNode(std::shared_ptr<Node> const &parent, std::string path,
   }
 }
 
-void Tree::AddPath(std::string path,
+void Tree::add_path(std::string path,
                    std::function<void(Request, Response *)> func) {
   auto subPaths = split(path, "/");
 
@@ -79,8 +79,8 @@ void printNode(std::shared_ptr<Node> node, size_t depth, size_t max_depth) {
     return;
   }
 
-  std::cout << std::string(depth, ' ') << "sub: \"" << node->m_subPath
-            << "\" IsDummy: " << node->m_isDummy << std::endl;
+  std::cout << std::string(depth, ' ') << "sub: \"" << node->m_sub_path
+            << "\" IsDummy: " << node->m_is_dummy << std::endl;
   for (auto &next : node->m_next) {
     printNode(next.second, depth + 1, max_depth);
   }
@@ -92,7 +92,7 @@ traverse(std::shared_ptr<Node> const &parent, std::string path,
 
   std::shared_ptr<Node> curr = parent->m_next[path];
   if (rest.size() == 0) {
-    if (curr != nullptr && !curr->m_isDummy)
+    if (curr != nullptr && !curr->m_is_dummy)
       return curr->m_function;
     else
       return std::nullopt;
@@ -109,10 +109,10 @@ traverse(std::shared_ptr<Node> const &parent, std::string path,
 }
 
 std::optional<std::function<void(Request, Response *)>>
-Tree::Get(std::string path) {
+Tree::get(std::string path) {
   auto subs = split(path, "/");
   if (subs.size() == 0) {
-    if (!m_root->m_isDummy)
+    if (!m_root->m_is_dummy)
       return m_root->m_function;
     else
       return std::nullopt;
@@ -123,4 +123,4 @@ Tree::Get(std::string path) {
   return traverse(m_root, newPath, subs);
 }
 
-void Tree::DebugPrint() { printNode(m_root, 0, 10); }
+void Tree::debug_Print() { printNode(m_root, 0, 10); }
