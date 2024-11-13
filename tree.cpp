@@ -25,7 +25,7 @@ Node::Node(std::string sub, bool isValue,
 
 Tree::Tree(std::string method) { m_method = method; }
 
-void addNode(std::shared_ptr<Node> const &parent, std::string path,
+void add_node(std::shared_ptr<Node> const &parent, std::string path,
              std::vector<std::string> rest,
              std::function<void(Request, Response *)> func) {
   std::shared_ptr<Node> curr = parent->m_next[path];
@@ -45,13 +45,13 @@ void addNode(std::shared_ptr<Node> const &parent, std::string path,
     auto newPath = rest.front();
     // Ineffiecient, use deque
     rest.erase(rest.begin());
-    addNode(curr, newPath, rest, func);
+    add_node(curr, newPath, rest, func);
   } else {
     auto newPath = rest.front();
     rest.erase(rest.begin());
     std::shared_ptr<Node> leaf = std::make_shared<Node>(Node{path});
     parent->m_next.insert_or_assign(path, leaf);
-    addNode(leaf, newPath, rest, func);
+    add_node(leaf, newPath, rest, func);
   }
 }
 
@@ -71,10 +71,10 @@ void Tree::add_path(std::string path,
 
   auto newPath = subPaths.front();
   subPaths.erase(subPaths.begin());
-  addNode(m_root, newPath, subPaths, func);
+  add_node(m_root, newPath, subPaths, func);
 }
 
-void printNode(std::shared_ptr<Node> node, size_t depth, size_t max_depth) {
+void print_node(std::shared_ptr<Node> node, size_t depth, size_t max_depth) {
   if (depth >= max_depth) {
     return;
   }
@@ -82,7 +82,7 @@ void printNode(std::shared_ptr<Node> node, size_t depth, size_t max_depth) {
   std::cout << std::string(depth, ' ') << "sub: \"" << node->m_sub_path
             << "\" IsDummy: " << node->m_is_dummy << std::endl;
   for (auto &next : node->m_next) {
-    printNode(next.second, depth + 1, max_depth);
+    print_node(next.second, depth + 1, max_depth);
   }
 }
 
@@ -123,4 +123,4 @@ Tree::get(std::string path) {
   return traverse(m_root, newPath, subs);
 }
 
-void Tree::debug_Print() { printNode(m_root, 0, 10); }
+void Tree::debug_Print() { print_node(m_root, 0, 10); }

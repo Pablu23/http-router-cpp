@@ -8,26 +8,26 @@
 
 using namespace http;
 
-Response::Response(statuscode::statusCode statusCode) {
+Response::Response(StatusCode::statusCode statusCode) {
   m_statusCode = statusCode;
-  SetHeader("Connection", "close");
+  set_header("Connection", "close");
 }
 
-void Response::SetHeader(const std::string name, const std::string value) {
+void Response::set_header(const std::string name, const std::string value) {
   m_headers.insert_or_assign(name, value);
 }
 
-void Response::SetPayload(const std::vector<std::byte> data) {
+void Response::set_payload(const std::vector<std::byte> data) {
   m_headers.insert(std::pair<std::string, std::string>(
       "Content-Length", std::to_string(data.size())));
   m_payload = data;
 }
 
-void Response::SetStatusCode(statuscode::statusCode statuscode) {
+void Response::set_status_code(StatusCode::statusCode statuscode) {
   m_statusCode = statuscode;
 }
 
-void Response::SetPayload(const std::string data) {
+void Response::set_payload(const std::string data) {
   m_headers.insert(std::pair<std::string, std::string>(
       "Content-Length", std::to_string(std::strlen(data.data()))));
 
@@ -36,14 +36,14 @@ void Response::SetPayload(const std::string data) {
                  [](char c) { return std::byte(c); });
 }
 
-void Response::SetContentType(const std::string type) {
+void Response::set_content_type(const std::string type) {
   m_headers.insert_or_assign("Content-Type", type);
 }
 
-void Response::Send(int clientSocket) {
+std::string Response::compile() {
   std::stringstream ss;
   ss << "HTTP/1.1 " << m_statusCode << " "
-     << statuscode::StatusCodeString(m_statusCode) << "\n";
+     << StatusCode::status_code_string(m_statusCode) << "\n";
   for (const auto &[key, value] : m_headers) {
     ss << key << ": " << value << "\n";
   }
@@ -54,11 +54,11 @@ void Response::Send(int clientSocket) {
       ss << c;
     }
   }
-  std::string p = ss.str();
-  send(clientSocket, p.data(), p.size(), 0);
+  return ss.str();
+  // ::send(clientSocket, p.data(), p.size(), 0);
 }
 
-void Response::Print() {
+void Response::print() {
   for (const auto &[key, value] : m_headers) {
     std::cout << "[" << key << "]: [" << value << "]\n";
   }

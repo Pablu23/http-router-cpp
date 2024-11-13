@@ -10,7 +10,7 @@ bool Request::protocol(std::stringstream *ss, int *procPart, char c) {
       m_method = ss->str();
       break;
     case 1:
-      m_pathRaw = ss->str();
+      m_path_raw = ss->str();
       break;
     case 2:
       m_protocol = ss->str();
@@ -72,17 +72,17 @@ Request::Request(std::vector<std::byte> buf) : path("") {
       ss << c;
     }
   }
-  path = Path{m_pathRaw};
+  path = Path{m_path_raw};
 }
 
-void Request::Print() {
+void Request::print() {
   std::cout << "Protocol: " << m_protocol << "\n"
-            << "Req: " << m_method << " " << m_pathRaw << std::endl;
+            << "Req: " << m_method << " " << m_path_raw << std::endl;
   for (const auto &[key, value] : m_headers) {
     std::cout << "[" << key << "]: [" << value << "]\n";
   }
 
-  if (HasData()) {
+  if (has_data()) {
     std::cout << "Payload: " << std::endl;
     for (auto &byte : m_payload) {
       std::cout << static_cast<char>(byte);
@@ -91,6 +91,6 @@ void Request::Print() {
   }
 }
 
-std::string Request::Method() { return m_method; }
-bool Request::HasData() { return m_payload.size() != 0; }
-std::vector<std::byte> Request::Data() { return m_payload; }
+std::string Request::method() { return m_method; }
+bool Request::has_data() { return m_payload.size() != 0; }
+std::vector<std::byte> Request::data() { return m_payload; }

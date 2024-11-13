@@ -22,7 +22,10 @@ fclean:
 
 re: fclean $(NAME)
 
-run: all
+build: all
+	g++ -std=c++20 -o server main.cpp -L. -lhttpablu
+
+run: build
 	g++ -std=c++20 -o server main.cpp -L. -lhttpablu
 	./server
 

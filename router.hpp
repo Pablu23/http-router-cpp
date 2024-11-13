@@ -19,6 +19,7 @@ private:
   int m_socket;
   sockaddr_in m_address;
   Response Route(Request req);
+  std::atomic<bool> m_running;
 
 private:
   std::mutex m_mutex;
@@ -36,7 +37,7 @@ public:
   void handle(std::string path_pattern,
               std::function<void(Request, Response *)> func);
   int start();
-  int stop();
+  void stop();
 };
 } // namespace http
 

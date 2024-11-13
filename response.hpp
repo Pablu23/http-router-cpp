@@ -20,7 +20,7 @@ public:
   void set_payload(const std::string data);
   void set_content_type(const std::string type);
   void set_status_code(const StatusCode::statusCode status_code);
-  void send(int client_socket);
+  std::string compile();
   void print();
 };
 } // namespace http

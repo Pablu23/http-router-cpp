@@ -18,9 +18,11 @@ Router::Router(int port) {
   m_address.sin_family = AF_INET;
   m_address.sin_port = htons(port);
   m_address.sin_addr.s_addr = INADDR_ANY;
+  m_running = false;
 }
 
 int Router::start() {
+  m_running = true;
   int err = bind(m_socket, (struct sockaddr *)&m_address, sizeof(m_address));
   if (err != 0)
     return err;
@@ -31,13 +33,16 @@ int Router::start() {
   if (err != 0)
     return err;
 
-  while (true) {
+  while (m_running.load()) {
     int client = accept(m_socket, nullptr, nullptr);
     queue_client(client);
   }
 
   stop_thread_loop();
+  return 0;
 }
+
+void Router::stop() { m_running.store(false); }
 
 void Router::queue_client(int fd) {
   {
@@ -83,7 +88,8 @@ void Router::thread_loop() {
     recv(client, buffer.data(), buffer.size(), 0);
     Request req(buffer);
     Response res = Route(req);
-    res.send(client);
+    auto payload = res.compile();
+    send(client, payload.data(), payload.size(), 0);
 
     shutdown(client, SHUT_WR);
     while (recv(client, buffer.data(), buffer.size(), 0) > 0) {
