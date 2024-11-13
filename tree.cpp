@@ -1,30 +1,12 @@
 #include "tree.hpp"
+#include "util.hpp"
 #include <cstddef>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <optional>
 
 using namespace http;
-
-std::vector<std::string> split(std::string s, std::string delimiter) {
-  size_t pos_start = 0, pos_end, delim_len = delimiter.length();
-  std::string token;
-  std::vector<std::string> res;
-
-  while ((pos_end = s.find(delimiter, pos_start)) != std::string::npos) {
-    token = s.substr(pos_start, pos_end - pos_start);
-    pos_start = pos_end + delim_len;
-    if (token != "") {
-      res.push_back(token);
-    }
-  }
-
-  token = s.substr(pos_start);
-  if (token != "") {
-    res.push_back(token);
-  }
-  return res;
-}
 
 Node::Node(std::string sub) {
   m_subPath = sub;
@@ -41,16 +23,7 @@ Node::Node(std::string sub, bool isValue,
   m_isDummy = false;
 }
 
-void create_dummy_nodes(std::shared_ptr<Node> **root,
-                        std::vector<std::string> rest) {
-  auto curr = *root;
-  for (auto next : rest) {
-    auto dummy = std::make_shared<Node>(Node{next});
-    (*curr)->m_next.insert_or_assign(next, dummy);
-    curr = &dummy;
-  }
-  root = &curr;
-}
+Tree::Tree(std::string method) { m_method = method; }
 
 void addNode(std::shared_ptr<Node> const &parent, std::string path,
              std::vector<std::string> rest,
@@ -111,6 +84,43 @@ void printNode(std::shared_ptr<Node> node, size_t depth, size_t max_depth) {
   for (auto &next : node->m_next) {
     printNode(next.second, depth + 1, max_depth);
   }
+}
+
+std::optional<std::function<void(Request, Response *)>>
+traverse(std::shared_ptr<Node> const &parent, std::string path,
+         std::vector<std::string> rest) {
+
+  std::shared_ptr<Node> curr = parent->m_next[path];
+  if (rest.size() == 0) {
+    if (curr != nullptr && !curr->m_isDummy)
+      return curr->m_function;
+    else
+      return std::nullopt;
+  }
+
+  if (curr) {
+    auto newPath = rest.front();
+    // Ineffiecient, use deque
+    rest.erase(rest.begin());
+    return traverse(curr, newPath, rest);
+  }
+
+  return std::nullopt;
+}
+
+std::optional<std::function<void(Request, Response *)>>
+Tree::Get(std::string path) {
+  auto subs = split(path, "/");
+  if (subs.size() == 0) {
+    if (!m_root->m_isDummy)
+      return m_root->m_function;
+    else
+      return std::nullopt;
+  }
+
+  auto newPath = subs.front();
+  subs.erase(subs.begin());
+  return traverse(m_root, newPath, subs);
 }
 
 void Tree::DebugPrint() { printNode(m_root, 0, 10); }

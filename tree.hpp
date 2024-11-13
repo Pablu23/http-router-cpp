@@ -27,10 +27,12 @@ class Tree {
 private:
   std::shared_ptr<Node> m_root;
   std::string m_method;
-  size_t depth;
+  size_t m_depth;
 
 public:
+  Tree(std::string method);
   void AddPath(std::string, std::function<void(Request, Response *)>);
+  std::optional<std::function<void(Request, Response *)>> Get(std::string);
   void DebugPrint();
 };
 } // namespace http

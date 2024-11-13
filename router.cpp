@@ -1,8 +1,10 @@
 #include "router.hpp"
 #include "http.hpp"
+#include "util.hpp"
 #include <csignal>
 #include <cstdint>
 #include <iostream>
+#include <memory>
 #include <mutex>
 #include <strings.h>
 #include <sys/select.h>
@@ -93,52 +95,25 @@ void Router::ThreadLoop() {
 
 void Router::Handle(std::string pathPattern,
                     std::function<void(Request, Response *)> func) {
-  m_routes.insert_or_assign(pathPattern, func);
+  auto route = split(pathPattern, " ");
+  // TODO: UNSAFE CHECK BOUNDS
+  auto tree = m_routes[route[0]];
+  if (!tree) {
+    tree = std::make_shared<Tree>(Tree(route[0]));
+    m_routes.insert_or_assign(route[0], tree);
+  }
+  tree->AddPath(route[1], func);
 }
 
-// This should be better
-// Probably dont use map but a tree for it, then traverse tree for routing
-// Also this isnt accurate
 Response Router::Route(Request req) {
-  for (const auto &[key, value] : m_routes) {
-    std::string pattern = key;
+  auto tree = m_routes[req.Method()];
+  auto route = tree->Get(req.path.Base());
 
-    int mPos = pattern.find(' ');
-    std::string method = pattern.substr(0, mPos);
-
-    if (mPos != -1 && method != req.Method()) {
-      continue;
-    }
-
-    pattern.erase(0, mPos + 1);
-    std::string patternCopy = pattern;
-    std::string path = req.path.Base();
-    bool found = false;
-    int pos = 0;
-    while (pos != -1) {
-      found = true;
-      pos = pattern.find('/');
-      std::string p = pattern.substr(0, pos);
-
-      int uPos = path.find('/');
-      std::string u = path.substr(0, uPos);
-
-      if (!p.starts_with('{') && strcasecmp(p.data(), u.data()) != 0) {
-        found = false;
-        break;
-      }
-
-      pattern.erase(0, pos + 1);
-      path.erase(0, uPos + 1);
-    }
-
-    if (found) {
-      Response res(statuscode::OK);
-      req.path.Match(patternCopy);
-      value(req, &res);
-      return res;
-    }
+  if (!route.has_value()) {
+    return Response(statuscode::NOT_FOUND);
   }
 
-  return Response(statuscode::NOT_FOUND);
+  Response res(statuscode::OK);
+  route.value()(req, &res);
+  return res;
 }
