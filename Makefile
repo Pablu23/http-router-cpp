@@ -1,8 +1,8 @@
 CC = g++
-CFLAGS = -Wall -Wextra -Werror
-CFILES = router.cpp path.cpp request.cpp response.cpp
-OFILES = router.o path.o request.o response.o 
-HFILES = router.hpp path.hpp request.hpp response.hpp http.hpp
+CFLAGS = -Wall -Wextra -Werror 
+CFILES = router.cpp path.cpp request.cpp response.cpp tree.cpp
+OFILES = router.o path.o request.o response.o tree.o
+HFILES = router.hpp path.hpp request.hpp response.hpp http.hpp tree.hpp
 
 NAME = libhttpablu.a
 
@@ -12,7 +12,7 @@ $(NAME): ofiles
 	ar rcs $(NAME) $(OFILES)
 
 ofiles:
-	g++ $(CFLAGS) -std=c++20 -O -c $(CFILES)
+	g++ $(CFLAGS) -std=c++20 -g -O0 -c $(CFILES)
 
 clean:
 	rm -f $(OFILES)
