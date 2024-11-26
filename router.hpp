@@ -6,7 +6,6 @@
 #include "tree.hpp"
 #include <condition_variable>
 #include <functional>
-#include <memory>
 #include <mutex>
 #include <netinet/in.h>
 #include <queue>
@@ -15,7 +14,7 @@
 namespace http {
 class Router {
 private:
-  std::map<std::string, std::shared_ptr<Tree>> m_routes;
+  std::map<std::string, Tree *> m_routes;
   int m_socket;
   sockaddr_in m_address;
   Response Route(Request req);
@@ -34,6 +33,7 @@ private:
 
 public:
   Router(int port);
+  ~Router();
   void handle(std::string path_pattern,
               std::function<void(Request, Response *)> func);
   int start();

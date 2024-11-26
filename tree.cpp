@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <cstdlib>
 #include <iostream>
-#include <memory>
 #include <optional>
 
 using namespace http;
@@ -23,19 +22,23 @@ Node::Node(std::string sub, bool isValue,
   m_is_dummy = false;
 }
 
+Node::~Node() {
+  for (auto n : m_next) {
+    delete n.second;
+  }
+}
+
 Tree::Tree(std::string method) { m_method = method; }
 
-void add_node(std::shared_ptr<Node> const &parent, std::string path,
-             std::vector<std::string> rest,
-             std::function<void(Request, Response *)> func) {
-  std::shared_ptr<Node> curr = parent->m_next[path];
+void add_node(Node *parent, std::string path, std::vector<std::string> rest,
+              std::function<void(Request, Response *)> func) {
+  Node *curr = parent->m_next[path];
   if (rest.size() == 0) {
     if (curr) {
       curr->m_is_dummy = false;
       curr->m_function = func;
     } else {
-      std::shared_ptr<Node> leaf =
-          std::make_shared<Node>(Node{path, false, func});
+      Node *leaf = new Node{path, false, func};
       parent->m_next.insert_or_assign(path, leaf);
     }
     return;
@@ -49,24 +52,25 @@ void add_node(std::shared_ptr<Node> const &parent, std::string path,
   } else {
     auto newPath = rest.front();
     rest.erase(rest.begin());
-    std::shared_ptr<Node> leaf = std::make_shared<Node>(Node{path});
+    Node *leaf = new Node{path};
     parent->m_next.insert_or_assign(path, leaf);
     add_node(leaf, newPath, rest, func);
   }
 }
 
 void Tree::add_path(std::string path,
-                   std::function<void(Request, Response *)> func) {
+                    std::function<void(Request, Response *)> func) {
   auto subPaths = split(path, "/");
 
   if (subPaths.size() == 0 && m_root == nullptr) {
-    m_root = std::make_shared<Node>(Node{"", false, func});
+    m_root = new Node{"", false, func};
     return;
   } else if (subPaths.size() == 0) {
+    m_root->m_is_dummy = false;
     m_root->m_function = func;
     return;
   } else if (m_root == nullptr) {
-    m_root = std::make_shared<Node>(Node{""});
+    m_root = new Node{""};
   }
 
   auto newPath = subPaths.front();
@@ -74,7 +78,9 @@ void Tree::add_path(std::string path,
   add_node(m_root, newPath, subPaths, func);
 }
 
-void print_node(std::shared_ptr<Node> node, size_t depth, size_t max_depth) {
+Tree::~Tree() { delete m_root; };
+
+void print_node(Node *node, size_t depth, size_t max_depth) {
   if (depth >= max_depth) {
     return;
   }
@@ -86,11 +92,11 @@ void print_node(std::shared_ptr<Node> node, size_t depth, size_t max_depth) {
   }
 }
 
-std::optional<std::function<void(Request, Response *)>>
-traverse(std::shared_ptr<Node> const &parent, std::string path,
-         std::vector<std::string> rest) {
+auto traverse(Node *const &parent, std::string path,
+              std::vector<std::string> rest)
+    -> std::optional<std::function<void(Request, Response *)>> {
 
-  std::shared_ptr<Node> curr = parent->m_next[path];
+  Node *curr = parent->m_next[path];
   if (rest.size() == 0) {
     if (curr != nullptr && !curr->m_is_dummy)
       return curr->m_function;
@@ -112,9 +118,9 @@ std::optional<std::function<void(Request, Response *)>>
 Tree::get(std::string path) {
   auto subs = split(path, "/");
   if (subs.size() == 0) {
-    if (!m_root->m_is_dummy)
+    if (!m_root->m_is_dummy) {
       return m_root->m_function;
-    else
+    } else
       return std::nullopt;
   }
 

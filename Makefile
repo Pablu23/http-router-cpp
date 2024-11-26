@@ -26,7 +26,6 @@ build: all
 	g++ -std=c++20 -o server main.cpp -L. -lhttpablu
 
 run: build
-	g++ -std=c++20 -o server main.cpp -L. -lhttpablu
 	./server
 
 install: all

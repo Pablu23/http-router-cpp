@@ -4,7 +4,6 @@
 #include <csignal>
 #include <cstdint>
 #include <iostream>
-#include <memory>
 #include <mutex>
 #include <strings.h>
 #include <sys/select.h>
@@ -19,6 +18,12 @@ Router::Router(int port) {
   m_address.sin_port = htons(port);
   m_address.sin_addr.s_addr = INADDR_ANY;
   m_running = false;
+}
+
+Router::~Router() {
+  for (auto t : m_routes) {
+    delete t.second;
+  }
 }
 
 int Router::start() {
@@ -105,7 +110,7 @@ void Router::handle(std::string pathPattern,
   // TODO: UNSAFE CHECK BOUNDS
   auto tree = m_routes[route[0]];
   if (!tree) {
-    tree = std::make_shared<Tree>(Tree(route[0]));
+    tree = new Tree(route[0]);
     m_routes.insert_or_assign(route[0], tree);
   }
   tree->add_path(route[1], func);
