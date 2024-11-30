@@ -12,7 +12,7 @@ $(NAME): ofiles
 	ar rcs $(NAME) $(OFILES)
 
 ofiles:
-	g++ $(CFLAGS) -std=c++20 -g -O0 -c $(CFILES)
+	$(CC) $(CFLAGS) -std=c++20 -g -O0 -c $(CFILES)
 
 clean:
 	rm -f $(OFILES)
@@ -23,7 +23,7 @@ fclean:
 re: fclean $(NAME)
 
 build: all
-	g++ -std=c++20 -o server main.cpp -L. -lhttpablu
+	$(CC) -std=c++20 -o server main.cpp -L. -lhttpablu
 
 run: build
 	./server
