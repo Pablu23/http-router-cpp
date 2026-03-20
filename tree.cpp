@@ -1,34 +1,10 @@
 #include "tree.hpp"
 #include "util.hpp"
-#include <cstddef>
 #include <cstdlib>
 #include <iostream>
 #include <optional>
 
 using namespace http;
-
-Node::Node(std::string sub) {
-  m_sub_path = sub;
-  m_is_dummy = true;
-  m_is_value = false;
-  m_function = nullptr;
-}
-
-Node::Node(std::string sub, bool isValue,
-           std::function<void(Request, Response *)> func) {
-  m_sub_path = sub;
-  m_is_value = isValue;
-  m_function = func;
-  m_is_dummy = false;
-}
-
-Node::~Node() {
-  for (auto n : m_next) {
-    delete n.second;
-  }
-}
-
-Tree::Tree(std::string method) { m_method = method; }
 
 void add_node(Node *parent, std::string path, std::vector<std::string> rest,
               std::function<void(Request, Response *)> func) {
@@ -52,11 +28,25 @@ void add_node(Node *parent, std::string path, std::vector<std::string> rest,
   } else {
     auto newPath = rest.front();
     rest.erase(rest.begin());
-    Node *leaf = new Node{path};
-    parent->m_next.insert_or_assign(path, leaf);
-    add_node(leaf, newPath, rest, func);
+    Node *dummy = new Node{path};
+    parent->m_next.insert_or_assign(path, dummy);
+    add_node(dummy, newPath, rest, func);
   }
 }
+
+void print_node(Node *node, size_t depth, size_t max_depth) {
+  if (depth >= max_depth) {
+    return;
+  }
+
+  std::cout << std::string(depth, ' ') << "sub: \"" << node->m_sub_path
+            << "\" IsDummy: " << node->m_is_dummy << std::endl;
+  for (auto &next : node->m_next) {
+    print_node(next.second, depth + 1, max_depth);
+  }
+}
+
+Tree::Tree(std::string method) { m_method = method; }
 
 void Tree::add_path(std::string path,
                     std::function<void(Request, Response *)> func) {
@@ -80,21 +70,8 @@ void Tree::add_path(std::string path,
 
 Tree::~Tree() { delete m_root; };
 
-void print_node(Node *node, size_t depth, size_t max_depth) {
-  if (depth >= max_depth) {
-    return;
-  }
-
-  std::cout << std::string(depth, ' ') << "sub: \"" << node->m_sub_path
-            << "\" IsDummy: " << node->m_is_dummy << std::endl;
-  for (auto &next : node->m_next) {
-    print_node(next.second, depth + 1, max_depth);
-  }
-}
-
-auto traverse(Node *const &parent, std::string path,
-              std::vector<std::string> rest)
-    -> std::optional<std::function<void(Request, Response *)>> {
+std::optional<std::function<void(Request, Response *)>>
+traverse(Node *parent, std::string path, std::vector<std::string> rest) {
 
   Node *curr = parent->m_next[path];
   if (rest.size() == 0) {

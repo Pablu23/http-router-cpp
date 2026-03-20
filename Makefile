@@ -2,7 +2,7 @@ CC = g++
 CFLAGS = -Wall -Wextra -Werror 
 CFILES = router.cpp path.cpp request.cpp response.cpp tree.cpp
 OFILES = router.o path.o request.o response.o tree.o
-HFILES = router.hpp path.hpp request.hpp response.hpp http.hpp tree.hpp
+HFILES = router.hpp path.hpp request.hpp response.hpp http.hpp tree.hpp node.hpp
 
 NAME = libhttpablu.a
 
@@ -36,4 +36,4 @@ remove:
 	rm /lib/$(NAME)
 	rm -d /usr/include/ -f $(HFILES)
 
-.PHONY: all clean fclean re run ofiles remove install
+.PHONY: all clean fclean re run ofiles remove install build

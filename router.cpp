@@ -1,6 +1,7 @@
 #include "router.hpp"
 #include "http.hpp"
 #include "util.hpp"
+#include <asm-generic/socket.h>
 #include <csignal>
 #include <cstdint>
 #include <iostream>
@@ -32,6 +33,11 @@ int Router::start() {
   if (err != 0)
     return err;
 
+  const int opt = 1;
+  err = setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+  if (err != 0)
+    return err;
+
   start_thread_loop();
 
   err = listen(m_socket, 5);
@@ -44,6 +50,8 @@ int Router::start() {
   }
 
   stop_thread_loop();
+  shutdown(m_socket, SHUT_RDWR);
+  close(m_socket);
   return 0;
 }
 
@@ -84,8 +92,9 @@ void Router::thread_loop() {
       std::unique_lock<std::mutex> lock(m_mutex);
       m_cond.wait(lock,
                   [this] { return !m_clients.empty() || m_should_terminate; });
-      if (m_should_terminate)
+      if (m_should_terminate) {
         return;
+      }
       client = m_clients.front();
       m_clients.pop();
     }

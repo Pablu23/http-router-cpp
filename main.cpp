@@ -2,6 +2,7 @@
 #include "router.hpp"
 #include <csignal>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 
 using namespace http;
@@ -54,6 +55,10 @@ int main() {
   });
 
   std::cout << "Starting Server" << std::endl;
-  router.start();
-  return 0;
+  int err = router.start();
+  if (err != 0) {
+    std::cout << "Error starting the Server with: " << strerror(errno)
+              << std::endl;
+  }
+  return err;
 }
